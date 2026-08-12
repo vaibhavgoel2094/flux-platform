@@ -46,6 +46,7 @@ model Customer {
   orgId           String
   org             Organization @relation(fields: [orgId], references: [id])
   name            String
+  email           String   @default("")
   tier            String   // "standard" | "strategic"
   strategicStatus String   @default("none")
   createdAt       DateTime @default(now())
@@ -141,6 +142,7 @@ model CaseReview {
   user       User     @relation(fields: [userId], references: [id])
   decision   String   // "approve" | "edit" | "escalate" | "correction"
   note       String?
+  finalDraft String?  // the exact customer-communication text as sent, captured at the moment of decision
   createdAt  DateTime @default(now())
 }
 

@@ -150,6 +150,7 @@ casesRouter.post("/:id/analyze", requireAuth, async (req, res) => {
 const reviewSchema = z.object({
   decision: z.enum(["approve", "edit", "escalate", "correction"]),
   note: z.string().optional(),
+  finalDraft: z.string().optional(),
 });
 
 casesRouter.post("/:id/review", requireAuth, async (req, res) => {
@@ -164,7 +165,7 @@ casesRouter.post("/:id/review", requireAuth, async (req, res) => {
     return;
   }
   const review = await prisma.caseReview.create({
-    data: { caseId: item.id, userId: req.user!.id, decision: parsed.data.decision, note: parsed.data.note },
+    data: { caseId: item.id, userId: req.user!.id, decision: parsed.data.decision, note: parsed.data.note, finalDraft: parsed.data.finalDraft },
   });
   const updated = await prisma.case.update({ where: { id: item.id }, data: { status: "Reviewed" } });
 

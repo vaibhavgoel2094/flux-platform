@@ -45,7 +45,7 @@ export function CustomerProfile() {
         </p>
         <h1>{customer.name}</h1>
         <p>
-          {customer.tier} · {customer.strategicStatus}
+          {customer.tier} · {customer.strategicStatus} · <span className="mono">{customer.email}</span>
         </p>
       </div>
 

@@ -4,6 +4,18 @@
 import { prisma } from "../db.js";
 import { computeAutonomyCeiling } from "../governance/autonomy.js";
 
+function emailFor(customerName: string): string {
+  const slug = customerName
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .join("");
+  return `ap@${slug}.com`;
+}
+
 async function main() {
   console.log("Clearing existing data...");
   await prisma.activityEntry.deleteMany();
@@ -114,7 +126,7 @@ async function main() {
 
   for (const c of customers) {
     const customer = await prisma.customer.create({
-      data: { orgId: org.id, name: c.name, tier: c.tier, strategicStatus: c.strategicStatus },
+      data: { orgId: org.id, name: c.name, email: emailFor(c.name), tier: c.tier, strategicStatus: c.strategicStatus },
     });
 
     if (c.escalation) {
@@ -217,6 +229,7 @@ async function main() {
       data: {
         orgId: org.id,
         name,
+        email: emailFor(name),
         tier: strategic ? "strategic" : "standard",
         strategicStatus: strategic ? "key-account" : "none",
       },

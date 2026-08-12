@@ -2,15 +2,21 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../state/AuthContext";
 
-// Dev-only user picker standing in for real SSO. Any seeded email signs in
-// with no password — swap for a WorkOS/Auth0 redirect when credentials
-// exist; nothing downstream of AuthContext needs to change.
-const SEEDED_USERS = [
-  { email: "priya@meridianmfg.com", name: "Priya Nandakumar", role: "CFO" },
-  { email: "daniel@meridianmfg.com", name: "Daniel Osei", role: "Controller" },
-  { email: "marisol@meridianmfg.com", name: "Marisol Vega", role: "AR Analyst" },
-  { email: "tomasz@meridianmfg.com", name: "Tomasz Krawiec", role: "AR Analyst" },
-  { email: "renee@meridianmfg.com", name: "Renee Ashworth", role: "Admin" },
+// Two demo personas standing in for real SSO. Production wires this to
+// WorkOS/Auth0 — nothing downstream of AuthContext needs to change.
+const PERSONAS = [
+  {
+    email: "marisol@meridianmfg.com",
+    name: "Marisol Vega",
+    role: "AR Collector",
+    description: "Works the Control Tower queue: reviews AI recommendations, approves or edits drafts, sends the final email.",
+  },
+  {
+    email: "daniel@meridianmfg.com",
+    name: "Daniel Osei",
+    role: "Finance Manager",
+    description: "Runs the release gate, authors playbooks and agent rules, reviews Assurance and portfolio analytics.",
+  },
 ];
 
 export function Login() {
@@ -33,14 +39,17 @@ export function Login() {
 
   return (
     <div className="login-shell">
-      <div className="login-card">
+      <div className="login-card" style={{ width: 440 }}>
         <h1>Sign in to Flux</h1>
-        <p>Local development sign-in — pick a seeded user. Production wires this to SSO.</p>
+        <p>Choose a persona for today's demo. Production wires this to SSO.</p>
         <div className="user-pick">
-          {SEEDED_USERS.map((u) => (
-            <button key={u.email} onClick={() => pick(u.email)}>
-              <div>{u.name}</div>
-              <div className="role">{u.role}</div>
+          {PERSONAS.map((p) => (
+            <button key={p.email} onClick={() => pick(p.email)} style={{ padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <strong style={{ fontSize: "1rem" }}>{p.role}</strong>
+                <span className="role">{p.name}</span>
+              </div>
+              <div style={{ fontSize: "0.82rem", color: "var(--ink-soft)", marginTop: 6 }}>{p.description}</div>
             </button>
           ))}
         </div>

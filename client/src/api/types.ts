@@ -37,10 +37,10 @@ export interface AgentAction {
 }
 
 export interface CaseDetail extends CaseSummary {
-  customer: { id: string; name: string; tier: string; strategicStatus: string; escalationContacts: EscalationContact[] };
+  customer: { id: string; name: string; email: string; tier: string; strategicStatus: string; escalationContacts: EscalationContact[] };
   invoice: { id: string; invoiceNo: string; amount: number; currency: string; daysOverdue: number; status: string; dueDate: string } | null;
   actions: AgentAction[];
-  reviews: { id: string; decision: string; note: string | null; createdAt: string; user: { name: string } }[];
+  reviews: { id: string; decision: string; note: string | null; finalDraft: string | null; createdAt: string; user: { name: string } }[];
 }
 
 export interface EscalationContact {
@@ -64,6 +64,7 @@ export interface CustomerSummary {
 export interface CustomerDetail {
   id: string;
   name: string;
+  email: string;
   tier: string;
   strategicStatus: string;
   invoices: { id: string; invoiceNo: string; amount: number; currency: string; status: string; daysOverdue: number; dueDate: string }[];
