@@ -22,6 +22,9 @@ model Organization {
   cases       Case[]
   evaluations Evaluation[]
   activity    ActivityEntry[]
+  playbooks   Playbook[]
+  personas    AgentPersona[]
+  automations AutomationRule[]
 }
 
 // role: "cfo" | "controller" | "analyst" | "admin"
@@ -166,6 +169,59 @@ model ActivityEntry {
   summary   String
   detail    String   // JSON-encoded payload for the expandable row
   createdAt DateTime @default(now())
+
+  @@index([orgId])
+}
+
+// Segment-based escalation cadence, authored by Finance rather than
+// engineering — the mechanism behind Agent Studio's Playbook builder.
+model Playbook {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id])
+  name        String   // e.g. "High Value Customers"
+  description String   @default("")
+  segment     String   // "strategic" | "standard" | "all"
+  createdAt   DateTime @default(now())
+
+  steps PlaybookStep[]
+
+  @@index([orgId])
+}
+
+model PlaybookStep {
+  id          String   @id @default(cuid())
+  playbookId  String
+  playbook    Playbook @relation(fields: [playbookId], references: [id])
+  order       Int
+  triggerDays Int      // days overdue that triggers this step
+  action      String   // "send_email" | "escalate" | "create_task" | "phone_call"
+  template    String   // short label of the template/message used
+}
+
+// Per-agent persona / system-prompt override — Agent Studio's Roles tab.
+model AgentPersona {
+  id         String   @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id])
+  agentType  String
+  label      String
+  instructions String // editable persona text, layered onto the base governance prompt
+  updatedAt  DateTime @updatedAt
+
+  @@unique([orgId, agentType])
+}
+
+// Per-intent automation toggle — Agent Studio's Automations tab.
+model AutomationRule {
+  id             String  @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id])
+  category       String  // "payment_queries" | "statement_requests" | ...
+  label          String
+  agentType      String
+  live           Boolean @default(false)
+  involvementPct Int     @default(0)
 
   @@index([orgId])
 }

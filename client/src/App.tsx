@@ -10,6 +10,9 @@ import { CustomerProfile } from "./pages/CustomerProfile";
 import { Assurance } from "./pages/Assurance";
 import { Analytics } from "./pages/Analytics";
 import { Activity } from "./pages/Activity";
+import { Playbooks } from "./pages/Playbooks";
+import { AgentStudio } from "./pages/AgentStudio";
+import { Copilot } from "./pages/Copilot";
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -33,6 +36,9 @@ function AppRoutes() {
         <Route path="/cases/:id" element={<CaseDetail />} />
         <Route path="/customers" element={<CustomerDirectory />} />
         <Route path="/customers/:id" element={<CustomerProfile />} />
+        <Route path="/playbooks" element={<Playbooks />} />
+        <Route path="/agent-studio" element={<AgentStudio />} />
+        <Route path="/copilot" element={<Copilot />} />
         <Route path="/assurance" element={<Assurance />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/activity" element={<Activity />} />

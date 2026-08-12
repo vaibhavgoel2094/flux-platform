@@ -4,7 +4,10 @@ import { useAuth } from "../state/AuthContext";
 const LINKS = [
   { to: "/", label: "Control Tower", end: true },
   { to: "/customers", label: "Customers" },
+  { to: "/playbooks", label: "Playbooks" },
+  { to: "/agent-studio", label: "Agent Studio" },
   { to: "/analytics", label: "Analytics" },
+  { to: "/copilot", label: "Ask Flux" },
   { to: "/assurance", label: "Assurance" },
   { to: "/activity", label: "Activity" },
 ];

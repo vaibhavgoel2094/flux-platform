@@ -13,6 +13,9 @@ import { casesRouter } from "./routes/cases.js";
 import { evaluationsRouter } from "./routes/evaluations.js";
 import { activityRouter } from "./routes/activity.js";
 import { analyticsRouter } from "./routes/analytics.js";
+import { playbooksRouter } from "./routes/playbooks.js";
+import { agentStudioRouter } from "./routes/agentStudio.js";
+import { copilotRouter } from "./routes/copilot.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 4000);
@@ -34,6 +37,9 @@ app.use("/api/cases", casesRouter);
 app.use("/api/evaluations", evaluationsRouter);
 app.use("/api/activity", activityRouter);
 app.use("/api/analytics", analyticsRouter);
+app.use("/api/playbooks", playbooksRouter);
+app.use("/api/agent-studio", agentStudioRouter);
+app.use("/api/copilot", copilotRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);

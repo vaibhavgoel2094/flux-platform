@@ -93,6 +93,39 @@ export interface Analytics {
   topReasons: { reason: string; count: number }[];
 }
 
+export interface PlaybookStep {
+  id: string;
+  order: number;
+  triggerDays: number;
+  action: "send_email" | "escalate" | "create_task" | "phone_call";
+  template: string;
+}
+
+export interface Playbook {
+  id: string;
+  name: string;
+  description: string;
+  segment: string;
+  steps: PlaybookStep[];
+}
+
+export interface AgentPersona {
+  id: string;
+  agentType: string;
+  label: string;
+  instructions: string;
+  updatedAt: string;
+}
+
+export interface AutomationRule {
+  id: string;
+  category: string;
+  label: string;
+  agentType: string;
+  live: boolean;
+  involvementPct: number;
+}
+
 export interface ActivityItem {
   id: string;
   actorType: "agent" | "human";
