@@ -1,0 +1,38 @@
+:root {
+  --paper: #F6F7F5;
+  --surface: #FFFFFF;
+  --ink: #10201C;
+  --ink-soft: #5B6B65;
+  --line: #DEE3DF;
+  --line-strong: #BFC9C3;
+
+  --accent: #2F6F5E;
+  --accent-ink: #173B31;
+  --accent-soft: #E1EBE6;
+
+  --good: #2E7D46;
+  --good-soft: #E4F1E7;
+  --warn: #A8701F;
+  --warn-soft: #F6ECD9;
+  --bad: #B0402C;
+  --bad-soft: #F5E3DE;
+
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --data: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --nav-w: 216px;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+code, .mono { font-family: var(--data); }

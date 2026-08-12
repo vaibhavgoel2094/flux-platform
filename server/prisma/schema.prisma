@@ -1,0 +1,171 @@
+// Flux Platform data model.
+// Dev datasource is SQLite for zero-setup local iteration; the schema itself
+// (types, relations, enums-as-strings) is written to be a config-only swap to
+// PostgreSQL at deploy — see server/.env.example.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users       User[]
+  customers   Customer[]
+  cases       Case[]
+  evaluations Evaluation[]
+  activity    ActivityEntry[]
+}
+
+// role: "cfo" | "controller" | "analyst" | "admin"
+model User {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id])
+  name      String
+  email     String   @unique
+  role      String
+  createdAt DateTime @default(now())
+
+  evaluations Evaluation[]
+  reviews     CaseReview[]
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  orgId           String
+  org             Organization @relation(fields: [orgId], references: [id])
+  name            String
+  tier            String   // "standard" | "strategic"
+  strategicStatus String   @default("none")
+  createdAt       DateTime @default(now())
+
+  invoices          Invoice[]
+  cases             Case[]
+  escalationContacts EscalationContact[]
+
+  @@index([orgId])
+}
+
+model EscalationContact {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  name       String
+  email      String
+  role       String
+  active     Boolean  @default(true)
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  orgId       String
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  invoiceNo   String
+  amount      Float
+  currency    String   @default("GBP")
+  dueDate     DateTime
+  status      String   // "current" | "overdue" | "paid" | "disputed"
+  daysOverdue Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  cases Case[]
+
+  @@index([customerId])
+  @@index([orgId])
+}
+
+// The unit of work an agent opens. Generalizes Flux's "collections case"
+// across agent types.
+model Case {
+  id            String   @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id])
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id])
+  invoiceId     String?
+  invoice       Invoice? @relation(fields: [invoiceId], references: [id])
+  agentType     String   // "collections" | "billing" | "deductions" | "cash_application" | "supplier_payer"
+  title         String   // plain-language case title, e.g. "Send invoice copy and follow up"
+  state         String   // "Ready" | "Approval" | "Blocked" | "Disputed" | "Human review"
+  autonomy      String   // "Human-led" | "Approval required" | "Autonomous"
+  status        String   @default("Not analyzed") // "Not analyzed" | "Recommendation ready" | "Human review required" | "Reviewed"
+  priority      String   @default("normal") // "low" | "normal" | "high"
+  createdAt     DateTime @default(now())
+
+  actions AgentAction[]
+  reviews CaseReview[]
+
+  @@index([orgId])
+  @@index([customerId])
+}
+
+// Every AI proposal + the governance verdict on it. This is the audit table.
+model AgentAction {
+  id               String   @id @default(cuid())
+  caseId           String
+  case             Case     @relation(fields: [caseId], references: [id])
+  source           String   // "saved-evidence" | "live-ai"
+  recommendation   String
+  rationale        String
+  policy           String
+  customerDraft    String
+  evidence         String   // JSON-encoded string[]
+  citations        String   // JSON-encoded string[]
+  nextFollowUp     String?
+  humanApproval    String
+  proposedAutonomy String
+  expectedAutonomy String
+  policyAlignment  String   // "Aligned" | "Conservative variance"
+  rawText          String?
+  createdAt        DateTime @default(now())
+}
+
+// Human decision recorded against a case.
+model CaseReview {
+  id         String   @id @default(cuid())
+  caseId     String
+  case       Case     @relation(fields: [caseId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  decision   String   // "approve" | "edit" | "escalate" | "correction"
+  note       String?
+  createdAt  DateTime @default(now())
+}
+
+// The release-gate record: one row per (org, agentType) evaluation run.
+model Evaluation {
+  id         String   @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id])
+  agentType  String
+  control    String   // one of the six required controls
+  rating     String?  // "pass" | "fail" | null (not yet rated)
+  runAt      DateTime?
+  ratedById  String?
+  ratedBy    User?    @relation(fields: [ratedById], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([orgId, agentType])
+}
+
+model ActivityEntry {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id])
+  actorType String   // "agent" | "human"
+  actorName String
+  summary   String
+  detail    String   // JSON-encoded payload for the expandable row
+  createdAt DateTime @default(now())
+
+  @@index([orgId])
+}
