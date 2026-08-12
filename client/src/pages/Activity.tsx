@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { api } from "../api/client";
+import { downloadActivityExport } from "../api/localApi";
 import type { ActivityItem } from "../api/types";
 
 export function Activity() {
@@ -17,9 +18,9 @@ export function Activity() {
         <h1>Audit trail</h1>
         <p>Every agent analysis and human decision, exportable for review.</p>
         <div className="btn-row" style={{ marginTop: 12 }}>
-          <a className="btn" href="/api/activity/export">
+          <button className="btn" onClick={downloadActivityExport}>
             Export JSON
-          </a>
+          </button>
         </div>
       </div>
 

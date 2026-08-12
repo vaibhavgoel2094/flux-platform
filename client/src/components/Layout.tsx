@@ -10,6 +10,7 @@ const LINKS = [
   { to: "/copilot", label: "Ask Flux" },
   { to: "/assurance", label: "Assurance" },
   { to: "/activity", label: "Activity" },
+  { to: "/setup", label: "Setup" },
 ];
 
 export function Layout() {

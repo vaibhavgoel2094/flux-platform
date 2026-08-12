@@ -1,49 +1,59 @@
 # Flux Platform
 
-The enterprise evolution of the Flux Collect capstone — a multi-tenant AI accounts-receivable platform, built to the [Enterprise Blueprint](../AI%20Lead%20gen) spec. This is a separate, independent repository; the original `ai-collections-agent` capstone is untouched.
+The enterprise evolution of the Flux Collect capstone — a full AI accounts-receivable product, built to the Enterprise Blueprint spec. This is a separate, independent repository; the original [`ai-collections-agent`](https://github.com/vaibhavgoel2094/ai-collections-agent) capstone is untouched.
 
-Ships today: the Tier-1 pilot-ready MVP — Control Tower, Customer 360, case review with governance-enforced AI recommendations, the six-control Finance release gate, escalation contacts, an audit trail, and a financial health dashboard (DSO, aging, top late-payment reasons).
+**Live demo:** https://vaibhavgoel2094.github.io/flux-platform/ — nothing to install, no terminal, no key required. Pick a persona and it works immediately in saved-evidence mode.
+
+## What's in Phase 1
+
+Control Tower, Customer 360, governed case review (draft → evidence → approve/edit/escalate → send email), the six-control Finance release gate, escalation contacts, a segment-based Playbook builder, Agent Studio (persona editor + per-intent automation toggles), a financial-health dashboard, the Ask Flux copilot, and a full activity/audit trail — across five agents (Collections, Billing, Deductions, Cash Application, Supplier & Payer).
 
 ## What makes a recommendation trustworthy here
 
-Ported and generalized from Flux Collect's `domain.js`, now living in `server/src/governance/`:
+Ported from Flux Collect's original `domain.js`, unchanged in logic, now living in `client/src/governance/` (and mirrored in `server/src/governance/` for the future managed deployment):
 
 - **Autonomy ceiling** (`autonomy.ts`) — computed deterministically from case signals *before* the model runs. The model's proposed autonomy can only be downgraded from this ceiling, never upgraded past it.
 - **Citation enforcement** (`citations.ts`) — a recommendation is only accepted if it cites both the record it's about and the policy it applied.
 - **Output contract** (`outputContract.ts`) — a strict 17-field schema; an incomplete response is an explicit non-decision, never a silent fallback.
-- **Release gate** (`routes/evaluations.ts`) — six controls a Controller must run and pass before a queue reflects live decisions to the team.
+- **Release gate** — six controls a Finance Manager must run and pass before a queue reflects live decisions to the team.
 
-## Stack
+## How this build runs — zero backend
 
-- **Server**: Express 5 + TypeScript + Prisma. SQLite for local dev (zero setup); the schema is Postgres-compatible for deploy — swap `DATABASE_URL` and the `provider` in `prisma/schema.prisma`.
-- **Client**: React 19 + Vite + TypeScript + React Router.
-- **AI**: Claude (Sonnet) via `@anthropic-ai/sdk`, one system prompt per agent type in `governance/prompts.ts`.
-- **Auth**: a dev-only email picker (`routes/auth.ts`) standing in for real SSO. Swap the cookie lookup in `middleware/auth.ts` for WorkOS/Auth0 when you have provider accounts — nothing downstream changes.
+The deployed demo is a fully static site: no server, no database to provision, no `.env` file to create.
 
-## Run locally
-
-```bash
-npm install
-cp server/.env.example server/.env   # add ANTHROPIC_API_KEY for live analysis; saved-evidence mode works without it
-npm run db:push
-npm run db:seed
-npm run dev
-```
-
-Client: http://localhost:5173 (proxies `/api` to the server on :4000). Sign in as any seeded user, e.g. `daniel@meridianmfg.com` (Controller) or `marisol@meridianmfg.com` (AR Analyst).
+- **Dataset**: `client/src/data/seed.json` — 188 synthetic customers, ~380 invoices, 233 cases for the fictional "Meridian Manufacturing Group," committed to the repo. Generated once by `scripts/generate-seed-data.mjs`; nothing to upload or run to see it.
+- **Workspace state**: every review, analysis, and setting change is written to the browser's `localStorage`. Reset to the bundled dataset any time from **Setup**.
+- **Auth**: a two-persona picker (AR Collector / Finance Manager) standing in for SSO — see **Setup** for what a real org-managed sign-in would replace it with.
+- **Live AI**: connect an Anthropic API key from the in-product **Setup** page. It's held in `sessionStorage` only — never written to the dataset, never exported, gone when the tab closes — and calls go straight from the browser to Anthropic. Without a key, every case still runs a full saved-evidence analysis against the same governance rules; nothing is blocked.
+- **Integrations** (ERP sync, direct email send, SSO): shown in Setup as **Coming soon** — the honest Phase 2 boundary, not hidden.
 
 ## Project layout
 
 ```
-server/
-  prisma/schema.prisma   org, user, customer, invoice, case, agentAction, caseReview, evaluation, activityEntry
-  src/governance/        autonomy ceiling, citation validator, output contract, prompts, resolve
-  src/routes/            auth, bootstrap, customers, cases, evaluations, activity, analytics
-  src/seed/seed.ts       fresh synthetic org "Meridian Manufacturing Group" — 8 customers, invoices, cases
 client/
-  src/pages/             Login, ControlTower, CaseDetail, CustomerDirectory, CustomerProfile, Assurance, Analytics, Activity
+  src/data/seed.json      the synthetic dataset — committed, not generated at runtime
+  src/governance/         autonomy ceiling, citation validator, output contract, prompts, resolve
+  src/localdb/            in-browser store: loads the bundled dataset, persists mutations to localStorage
+  src/api/localApi.ts     fulfills the same get/post/put contract a real server would, entirely client-side
+  src/anthropicBrowser.ts direct browser-to-Anthropic calls, BYO key from Setup
+  src/pages/               ControlTower, CaseDetail, CustomerProfile, Playbooks, AgentStudio, Analytics,
+                            Copilot, Assurance, Activity, Setup
+scripts/generate-seed-data.mjs   regenerates client/src/data/seed.json — only needed if the dataset changes
+docs/                    the built static site GitHub Pages serves (built from client/, vite base "/flux-platform/")
+server/                  the future managed-deployment path — Express + Prisma/Postgres, same governance
+                          logic, real auth and a real database. Not part of the live demo above.
 ```
+
+## Rebuilding and redeploying the static site
+
+```bash
+cd client
+npm install
+npm run build        # outputs to ../docs (vite.config.ts: base "/flux-platform/", outDir "../docs")
+```
+
+Commit and push `docs/` on `main` — GitHub Pages is configured to serve from `main` / `/docs`.
 
 ## Roadmap
 
-See the Enterprise Blueprint for the full phased plan. Next up (Tier 2): Billing and Cash Application agents, the segment-based playbook/cadence builder, Agent Studio (persona editor + per-intent automation toggles), and a live ERP read integration.
+Phase 2: live ERP read integration, direct email send, real SSO, managed Postgres. Phase 3: the remaining Flux workflows named in the original capstone vision — Flux Pay, Flux Close, Flux Plan, Flux Cash.

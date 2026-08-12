@@ -13,6 +13,7 @@ import { Activity } from "./pages/Activity";
 import { Playbooks } from "./pages/Playbooks";
 import { AgentStudio } from "./pages/AgentStudio";
 import { Copilot } from "./pages/Copilot";
+import { Setup } from "./pages/Setup";
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -42,6 +43,7 @@ function AppRoutes() {
         <Route path="/assurance" element={<Assurance />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/activity" element={<Activity />} />
+        <Route path="/setup" element={<Setup />} />
       </Route>
     </Routes>
   );
